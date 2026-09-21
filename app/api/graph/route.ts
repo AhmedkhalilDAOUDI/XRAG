@@ -1,0 +1,2 @@
+import {owner,json,failure,rows} from '@/lib/runtime';
+export async function GET(r:Request){try{const u=owner(r);const[entities,edges]=await Promise.all([rows('SELECT e.id,e.label,e.kind,COUNT(m.id) mentions FROM entities e LEFT JOIN mentions m ON m.entity_id=e.id WHERE e.owner=? GROUP BY e.id ORDER BY mentions DESC',u),rows('SELECT e.*,c.document_id,d.title,c.page FROM edges e JOIN chunks c ON c.id=e.chunk_id JOIN documents d ON d.id=c.document_id WHERE e.owner=?',u)]);return json({entities,edges});}catch(e){return failure(e);}}
