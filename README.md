@@ -1,8 +1,8 @@
-# N6 Enterprise Knowledge
+# XRAG Enterprise Knowledge
 
 English PFE implementation for **Daoudi Ahmed Khalil**, **MDSE**, École Hassania des Travaux Publics, supervised by **EL GHAZI**, academic year **2025/2026**.
 
-N6 indexes documents, extracts an evidence-linked property graph, and answers questions through lexical, semantic, graph, or hybrid retrieval. The interface includes source inspection, graph exploration, documented expert candidates, related documents, original downloads, and saved questions. Uploaded text is sent to NVIDIA for embeddings, extraction, and generation.
+XRAG indexes documents, extracts an evidence-linked property graph, and answers questions through lexical, semantic, graph, or hybrid retrieval. The interface includes source inspection, graph exploration, documented expert candidates, related documents, original downloads, and saved questions. Uploaded text is sent to NVIDIA for embeddings, extraction, and generation.
 
 ## Run locally
 
@@ -61,7 +61,7 @@ docker compose up -d
 python3 -m venv .venv
 .venv/bin/pip install -r requirements-neo4j.txt
 # Download Export graph from the authenticated interface.
-NEO4J_URI=bolt://127.0.0.1:7687 NEO4J_USER=neo4j .venv/bin/python scripts/neo4j_import.py /path/to/n6-knowledge-graph.json
+NEO4J_URI=bolt://127.0.0.1:7687 NEO4J_USER=neo4j .venv/bin/python scripts/neo4j_import.py /path/to/xrag-knowledge-graph.json
 ```
 
 The importer performs idempotent MERGE operations in a transaction. It does not delete stale content or automatically synchronise deletions. Its local ports bind to loopback. Graph exports contain document text: protect them as carefully as the originals.
@@ -79,3 +79,5 @@ Delete removes original bytes, passages, dependent edges/mentions, orphan entiti
 ## Production acceptance boundary
 
 This release is a tested private academic pilot, not independently certified enterprise software. Before confidential organisation-wide use: validate the real corpus and permissions, agree provider processing terms, configure membership policy, test backup restoration and incident response, run concurrency/load tests and a security review, and perform independent human evaluation. Exact implemented limits and unverified items accompany the report. Do not interpret passing engineering tests as proof of answer correctness or general GraphRAG superiority.
+
+The product name is **XRAG**. Existing deployment URLs, graph format `n6-graph-v1`, Neo4j labels, and `N6_*` collector variables retain their initial identifiers for compatibility. The academic report, presentation, and learning guide are delivered in the sibling RAG folders and in the private GitHub release pack.

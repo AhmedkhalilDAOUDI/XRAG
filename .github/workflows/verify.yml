@@ -1,4 +1,4 @@
-name: Verify N6
+name: Verify XRAG
 on: [push, pull_request]
 jobs:
   verify:

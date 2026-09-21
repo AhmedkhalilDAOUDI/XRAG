@@ -1,11 +1,11 @@
-"""Import an authenticated N6 graph export into a scoped Neo4j mirror.
+"""Import an authenticated XRAG graph export into a scoped Neo4j mirror.
 Usage: python scripts/neo4j_import.py /path/to/export.json
 Requires NEO4J_URI, NEO4J_USER, NEO4J_PASSWORD. Never deletes other data.
 """
 import json, os, sys
 from neo4j import GraphDatabase
 payload=json.load(open(sys.argv[1]))
-if payload.get('format')!='n6-graph-v1': raise SystemExit('Not an N6 export')
+if payload.get('format')!='n6-graph-v1': raise SystemExit('Not a supported XRAG export')
 uri=os.environ.get('NEO4J_URI','bolt://127.0.0.1:7687')
 driver=GraphDatabase.driver(uri,auth=(os.environ.get('NEO4J_USER','neo4j'),os.environ['NEO4J_PASSWORD']))
 with driver.session() as session:
