@@ -35,7 +35,9 @@ The test scripts perform real NVIDIA calls and may consume provider quota. The i
 
 ![XRAG end-to-end workflow](docs/xrag-workflow.png)
 
-The editable Mermaid source is in [`docs/xrag-workflow.mmd`](docs/xrag-workflow.mmd). Regenerate the PNG with `python3 scripts/render-workflow.py` using Python with Pillow installed.
+The [workflow glossary](docs/xrag-workflow-keywords.md) explains every technical term used in the diagram. A [visual keyword map](docs/xrag-workflow-keywords.png) provides the same definitions as a companion PNG. The editable Mermaid source is in [`docs/xrag-workflow.mmd`](docs/xrag-workflow.mmd). Regenerate the images with `python3 scripts/render-workflow.py` and `python3 scripts/render-workflow-keywords.py` using Python with Pillow installed.
+
+![XRAG workflow keyword map](docs/xrag-workflow-keywords.png)
 
 React/Vinext and TypeScript run on Cloudflare Workers. D1 holds metadata, passages, embeddings, and a SQL property graph. R2 preserves originals. LangGraph orchestrates retrieval, generation, and citation validation. NVIDIA models are selected by environment variables; the verified release uses `nvidia/nemotron-3-super-120b-a12b` and `nvidia/nemotron-3-embed-1b` (2048 dimensions).
 
