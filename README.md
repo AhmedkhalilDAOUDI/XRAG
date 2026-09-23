@@ -33,6 +33,10 @@ The test scripts perform real NVIDIA calls and may consume provider quota. The i
 
 ## Architecture
 
+![XRAG end-to-end workflow](docs/xrag-workflow.png)
+
+The editable Mermaid source is in [`docs/xrag-workflow.mmd`](docs/xrag-workflow.mmd). Regenerate the PNG with `python3 scripts/render-workflow.py` using Python with Pillow installed.
+
 React/Vinext and TypeScript run on Cloudflare Workers. D1 holds metadata, passages, embeddings, and a SQL property graph. R2 preserves originals. LangGraph orchestrates retrieval, generation, and citation validation. NVIDIA models are selected by environment variables; the verified release uses `nvidia/nemotron-3-super-120b-a12b` and `nvidia/nemotron-3-embed-1b` (2048 dimensions).
 
 Passages are at most 1100 characters with roughly 140 characters of overlap. Hybrid retrieval uses reciprocal rank fusion with constant 60 over lexical BM25-style, vector cosine, and bounded two-hop graph rankings. The model receives at most six source passages. Citation identifiers and exact supporting quotations are validated; semantic entailment still requires human review.

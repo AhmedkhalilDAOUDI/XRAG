@@ -1,0 +1,30 @@
+flowchart TD
+    A[Authenticated XRAG interface] --> B[Upload a supported document]
+    B --> C[Browser extraction: PDF.js, Mammoth or OCR]
+    C --> D[Server validation, limits and SHA-256 deduplication]
+    D --> E[Clean and chunk: about 1,100 characters and 140 overlap]
+    E --> F[Passage embeddings: Nemotron 3 Embed 1B]
+    E --> G[Entity and relation extraction: Nemotron 3 Super]
+    G --> H[Schema, quotation and endpoint validation]
+    F --> I[D1: metadata, passages, vectors and property graph]
+    H --> I
+    D --> J[R2: original files]
+    I -. optional export .-> K[Neo4j local analysis mirror]
+
+    A --> L[Ask a question and select a retrieval mode]
+    L --> M[Authenticated and rate-limited API route]
+    M --> N[LangGraph: Retrieve]
+    N --> N1[Lexical BM25]
+    N --> N2[Vector cosine similarity]
+    N --> N3[Graph traversal]
+    N1 --> O[Hybrid RRF and bounded evidence selection]
+    N2 --> O
+    N3 --> O
+    O --> P[LangGraph: Generate grounded claims]
+    P --> Q[LangGraph: Validate source IDs and quotations]
+    Q --> R[Answer, passages, graph paths and warnings]
+    R --> S[Source inspection and saved history]
+    I --> T[Graph exploration, expert candidates and recommendations]
+
+    U[Deletion request] --> V[Remove R2 original and D1-derived records]
+    V --> W[Remove orphan entities and stale query history]
