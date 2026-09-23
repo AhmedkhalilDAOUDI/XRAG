@@ -39,6 +39,19 @@ The [workflow glossary](docs/xrag-workflow-keywords.md) explains every technical
 
 ![XRAG workflow keyword map](docs/xrag-workflow-keywords.png)
 
+### French learning materials
+
+- [French workflow PNG](docs/xrag-workflow-fr.png) and [editable Mermaid source](docs/xrag-workflow-fr.mmd)
+- [French keyword map PNG](docs/xrag-workflow-keywords-fr.png) and [complete French glossary](docs/xrag-workflow-keywords-fr.md)
+- [French image renderers](scripts/render-workflow-fr.py) for the workflow and [`render-workflow-keywords-fr.py`](scripts/render-workflow-keywords-fr.py) for the keyword map
+
+### Complete beginner courses
+
+- [English PDF course](docs/XRAG_Full_Course_Zero_to_100_EN.pdf) and [editable English source](docs/xrag-course-en.md)
+- [French PDF course](docs/Cours_Complet_XRAG_De_Zero_A_100_FR.pdf) and [editable French source](docs/xrag-course-fr.md)
+
+The two course editions teach the project from files, HTTP, databases, LLMs, and RAG through the exact XRAG ingestion, graph, retrieval, LangGraph, validation, testing, deployment, and production-boundary decisions. The English edition contains 44 A4 pages and the French edition contains 43 A4 pages.
+
 React/Vinext and TypeScript run on Cloudflare Workers. D1 holds metadata, passages, embeddings, and a SQL property graph. R2 preserves originals. LangGraph orchestrates retrieval, generation, and citation validation. NVIDIA models are selected by environment variables; the verified release uses `nvidia/nemotron-3-super-120b-a12b` and `nvidia/nemotron-3-embed-1b` (2048 dimensions).
 
 Passages are at most 1100 characters with roughly 140 characters of overlap. Hybrid retrieval uses reciprocal rank fusion with constant 60 over lexical BM25-style, vector cosine, and bounded two-hop graph rankings. The model receives at most six source passages. Citation identifiers and exact supporting quotations are validated; semantic entailment still requires human review.

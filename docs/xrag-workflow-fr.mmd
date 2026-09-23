@@ -1,0 +1,30 @@
+flowchart TD
+    A[Interface XRAG authentifiee] --> B[Charger un document accepte]
+    B --> C[Extraction navigateur : PDF.js, Mammoth ou OCR]
+    C --> D[Validation serveur, limites et deduplication SHA-256]
+    D --> E[Nettoyage et decoupage : environ 1 100 caracteres et 140 de chevauchement]
+    E --> F[Embeddings des passages : Nemotron 3 Embed 1B]
+    E --> G[Extraction des entites et relations : Nemotron 3 Super]
+    G --> H[Validation du schema, des citations et des extremites]
+    F --> I[D1 : metadonnees, passages, vecteurs et graphe de proprietes]
+    H --> I
+    D --> J[R2 : fichiers originaux]
+    I -. export optionnel .-> K[Miroir Neo4j pour l'analyse locale]
+
+    A --> L[Poser une question et choisir le mode de recherche]
+    L --> M[Route API authentifiee et limitee en debit]
+    M --> N[LangGraph : rechercher]
+    N --> N1[Recherche lexicale BM25]
+    N --> N2[Similarite cosinus vectorielle]
+    N --> N3[Parcours du graphe]
+    N1 --> O[Fusion RRF hybride et selection limitee des preuves]
+    N2 --> O
+    N3 --> O
+    O --> P[LangGraph : generer des affirmations fondees]
+    P --> Q[LangGraph : valider les IDs de source et les citations]
+    Q --> R[Reponse, passages, chemins du graphe et avertissements]
+    R --> S[Inspection des sources et historique]
+    I --> T[Exploration du graphe, experts candidats et recommandations]
+
+    U[Demande de suppression] --> V[Supprimer l'original R2 et les donnees derivees D1]
+    V --> W[Supprimer les entites orphelines et l'historique obsolete]
