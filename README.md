@@ -52,6 +52,10 @@ The [workflow glossary](docs/xrag-workflow-keywords.md) explains every technical
 
 The two course editions teach the project from files, HTTP, databases, LLMs, and RAG through the exact XRAG ingestion, graph, retrieval, LangGraph, validation, testing, deployment, and production-boundary decisions. The English edition contains 44 A4 pages and the French edition contains 43 A4 pages.
 
+### Responsibility pipeline
+
+The [actor pipeline PNG](docs/xrag-actor-pipeline.png) separates the work done by the user, browser tools, deterministic XRAG code, NVIDIA models, and data infrastructure. The [written English walkthrough](docs/xrag-actor-pipeline.md) gives the exact component and output for each of its 21 steps. Matching [French PNG](docs/xrag-actor-pipeline-fr.png) and [French walkthrough](docs/xrag-actor-pipeline-fr.md) versions are included. Regenerate both PNGs with `python3 scripts/render-actor-pipeline.py` using Python with Pillow installed.
+
 React/Vinext and TypeScript run on Cloudflare Workers. D1 holds metadata, passages, embeddings, and a SQL property graph. R2 preserves originals. LangGraph orchestrates retrieval, generation, and citation validation. NVIDIA models are selected by environment variables; the verified release uses `nvidia/nemotron-3-super-120b-a12b` and `nvidia/nemotron-3-embed-1b` (2048 dimensions).
 
 Passages are at most 1100 characters with roughly 140 characters of overlap. Hybrid retrieval uses reciprocal rank fusion with constant 60 over lexical BM25-style, vector cosine, and bounded two-hop graph rankings. The model receives at most six source passages. Citation identifiers and exact supporting quotations are validated; semantic entailment still requires human review.
