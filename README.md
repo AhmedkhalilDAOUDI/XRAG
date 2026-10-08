@@ -33,6 +33,8 @@ The test scripts perform real NVIDIA calls and may consume provider quota. The i
 
 ## Architecture
 
+The [OTHER IDEAS roadmap](OTHER_IDEAS.md) lists prioritized improvements for retrieval, ingestion, knowledge graphs, grounded generation, security, scale, evaluation, operations, UX, and research experiments including Jev.
+
 ![XRAG end-to-end workflow](docs/xrag-workflow.png)
 
 The [workflow glossary](docs/xrag-workflow-keywords.md) explains every technical term used in the diagram. A [visual keyword map](docs/xrag-workflow-keywords.png) provides the same definitions as a companion PNG. The editable Mermaid source is in [`docs/xrag-workflow.mmd`](docs/xrag-workflow.mmd). Regenerate the images with `python3 scripts/render-workflow.py` and `python3 scripts/render-workflow-keywords.py` using Python with Pillow installed.
