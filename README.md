@@ -1,6 +1,6 @@
 # XRAG Enterprise Knowledge
 
-English PFE implementation for **Daoudi Ahmed Khalil**, **MDSE**, École Hassania des Travaux Publics, supervised by **EL GHAZI**, academic year **2025/2026**.
+
 
 XRAG indexes documents, extracts an evidence-linked property graph, and answers questions through lexical, semantic, graph, or hybrid retrieval. The interface includes source inspection, graph exploration, documented expert candidates, related documents, original downloads, and saved questions. Uploaded text is sent to NVIDIA for embeddings, extraction, and generation.
 
