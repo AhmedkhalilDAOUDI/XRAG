@@ -3,6 +3,8 @@ export const MAX_CHARACTERS=40000,MAX_CHUNKS=64,MAX_CORPUS_CHUNKS=500;
 const stop=new Set('a an and are as at be been by can did do does for from had has have how i in is it of on or our should that the their then there these they this to was were what when where which who why will with would you your'.split(' '));
 export function tokens(s:string):string[]{return(s.toLowerCase().match(/[\p{L}\p{N}]+/gu)||[]).filter(w=>w.length>1&&!stop.has(w));}
 export function normalized(s:string){return s.normalize('NFKC').toLowerCase().replace(/[^\p{L}\p{N}]+/gu,' ').trim();}
+// Whole-word phrase match on normalized text, so "ai" does not match inside "maintenance".
+export function containsPhrase(text:string,phrase:string){return !!phrase&&` ${text} `.includes(` ${phrase} `);}
 export function clean(s:string){return s.replace(/\r\n?/g,'\n').replace(/\u0000/g,'').replace(/[ \t]+/g,' ').replace(/\n{3,}/g,'\n\n').trim();}
 export function chunkPages(pages:Page[],documentId:string):Chunk[]{
  const output:Chunk[]=[];let section='Document';
@@ -12,7 +14,7 @@ export function chunkPages(pages:Page[],documentId:string):Chunk[]{
 export function cosine(a:number[],b:number[]){if(!a.length||a.length!==b.length)return 0;let dot=0,x=0,y=0;for(let i=0;i<a.length;i++){dot+=a[i]*b[i];x+=a[i]**2;y+=b[i]**2;}return x&&y?dot/Math.sqrt(x*y):0;}
 export function lexicalRanks(question:string,chunks:Chunk[]){const qt=[...new Set(tokens(question))],docs=chunks.map(c=>tokens(c.text)),avg=docs.reduce((s,d)=>s+d.length,0)/(docs.length||1),df=new Map(qt.map(t=>[t,docs.filter(d=>d.includes(t)).length]));return chunks.map((c,i)=>({id:c.id,score:qt.reduce((s,t)=>{const f=docs[i].filter(x=>x===t).length,n=df.get(t)||0;return s+Math.log(1+(chunks.length-n+.5)/(n+.5))*(f*2.2)/(f+1.2*(.25+.75*docs[i].length/(avg||1)));},0)})).filter(x=>x.score>0).sort((a,b)=>b.score-a.score||a.id.localeCompare(b.id));}
 export function graphSearch(question:string,entities:Entity[],edges:Edge[],mentions:{entity_id:string;chunk_id:string}[]){
- const q=normalized(question),qt=new Set(tokens(question)),seeds=entities.filter(e=>q.includes(normalized(e.label))||tokens(e.label).filter(t=>qt.has(t)).length/Math.max(1,tokens(e.label).length)>=.75).slice(0,8),scores=new Map<string,number>(),paths:GraphPath[]=[];let frontier=seeds.map(e=>({entities:[e.id],edges:[] as Edge[]}));
+ const q=normalized(question),qt=new Set(tokens(question)),seeds=entities.filter(e=>containsPhrase(q,normalized(e.label))||tokens(e.label).filter(t=>qt.has(t)).length/Math.max(1,tokens(e.label).length)>=.75).slice(0,8),scores=new Map<string,number>(),paths:GraphPath[]=[];let frontier=seeds.map(e=>({entities:[e.id],edges:[] as Edge[]}));
  for(const seed of seeds)for(const m of mentions.filter(m=>m.entity_id===seed.id))scores.set(m.chunk_id,1);
  for(let depth=0;depth<2;depth++){const next:GraphPath[]=[];for(const path of frontier){const id=path.entities[path.entities.length-1];for(const edge of edges.filter(e=>e.source===id||e.target===id).slice(0,20)){const target=edge.source===id?edge.target:edge.source;if(path.entities.includes(target))continue;const p={entities:[...path.entities,target],edges:[...path.edges,edge]};next.push(p);paths.push(p);scores.set(edge.chunk_id,(scores.get(edge.chunk_id)||0)+1/(depth+1));for(const m of mentions.filter(m=>m.entity_id===target))scores.set(m.chunk_id,(scores.get(m.chunk_id)||0)+.4/(depth+1));}}frontier=next.slice(0,40);}
  return {ranked:[...scores].map(([id,score])=>({id,score})).sort((a,b)=>b.score-a.score),paths:paths.slice(0,24)};

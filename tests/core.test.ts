@@ -1,6 +1,6 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
-import {chunkPages,cosine,lexicalRanks,retrieve,validateClaims,graphSearch,normalized} from '../lib/core';
+import {chunkPages,cosine,lexicalRanks,retrieve,validateClaims,graphSearch,normalized,containsPhrase} from '../lib/core';
 import type {Chunk,Evidence,Entity,Edge} from '../lib/types';
 const chunk=(id:string,text:string,document_id=id,vector=[1,0]):Chunk=>({id,document_id,text,vector,page:1,ordinal:0,section:'Test'});
 const corpus=[chunk('a','Nora leads the Atlas project. Atlas uses PostgreSQL.'),chunk('b','Atlas depends on Boreal. Boreal has a security review.'),chunk('c','Boreal follows the access review procedure.'),chunk('d','Garden plants need water.', 'd',[0,1])];
@@ -18,6 +18,8 @@ test('lexical retrieval rejects no-overlap question',()=>assert.equal(lexicalRan
 test('lexical ranking finds exact technical term',()=>assert.equal(lexicalRanks('PostgreSQL',corpus)[0].id,'a'));
 test('graph follows evidenced two-hop paths',()=>{const r=graphSearch('Nora',entities,edges,mentions);assert(r.paths.some(p=>p.entities.join(',')==='n,a,b'));assert(r.ranked.some(c=>c.id==='c'));});
 test('unknown graph entity returns no invented path',()=>assert.equal(graphSearch('Zephyr',entities,edges,mentions).paths.length,0));
+test('phrase matching requires whole words',()=>{assert.equal(containsPhrase(normalized('The maintenance schedule is good.'),'ai'),false);assert.equal(containsPhrase(normalized('Atlas uses AI.'),'ai'),true);assert.equal(containsPhrase(normalized('Contact Example Company, Inc.'),normalized('Example Company')),true);assert.equal(containsPhrase('example', ''),false);});
+test('short entity labels do not seed inside other words',()=>{const short:Entity[]=[{id:'ai',label:'AI',kind:'Technology'},{id:'go',label:'Go',kind:'Technology'}],m=[{entity_id:'ai',chunk_id:'x'},{entity_id:'go',chunk_id:'y'}];assert.equal(graphSearch('What did the maintenance team say about good practice?',short,[],m).ranked.length,0);assert.deepEqual(graphSearch('Which teams use AI?',short,[],m).ranked.map(r=>r.id),['x']);});
 test('graph retains direction even when traversed in reverse',()=>{const p=graphSearch('Boreal',entities,edges,mentions).paths.find(p=>p.edges[0]?.id==='e2');assert.equal(p?.edges[0].source,'a');assert.equal(p?.edges[0].target,'b');});
 test('hybrid fuses genuine branches and returns mapped citations',()=>{const r=retrieve('Nora Atlas','hybrid',corpus,[1,0],entities,edges,mentions);assert.equal(r.sources[0].id,'a');assert.deepEqual(r.sources[0].branches,['lexical','vector','graph']);assert.equal(r.sources[0].citation,'S1');});
 test('graph paths shown only when every edge source is retrieved',()=>{const r=retrieve('PostgreSQL','lexical',corpus,[],entities,edges,mentions);assert(r.paths.every(p=>p.edges.every(e=>r.sources.some(s=>s.id===e.chunk_id))));});
