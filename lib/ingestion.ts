@@ -1,5 +1,5 @@
 import {extractPassages,ExtractionValidationError} from './extraction';
-import {chunkPages,normalized,MAX_CHARACTERS,MAX_CORPUS_CHUNKS} from './core';
+import {chunkPages,normalized,containsPhrase,MAX_CHARACTERS,MAX_CORPUS_CHUNKS} from './core';
 import {runtime,rows,digest,HttpError} from './runtime';
 import {chat,embed,modelIds} from './nvidia';
 import type {Chunk,Page} from './types';
@@ -17,12 +17,12 @@ export async function ingest(user:string,file:File,pages:Page[],title:string,ext
  const db=runtime().DB,storageKey=`${await digest(user)}/${id}`,now=new Date().toISOString(),statements:D1PreparedStatement[]=[db.prepare('INSERT INTO documents (id,owner,title,filename,mime,sha,storage_key,status,chunks,characters,embedding_model,created_at,extraction) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)').bind(id,user,title,file.name,file.type||'application/octet-stream',sha,storageKey,'ready',chunks.length,characters,modelIds().embedding,now,extraction)];
  for(const c of chunks)statements.push(db.prepare('INSERT INTO chunks (id,owner,document_id,ordinal,page,section,text,vector) VALUES (?,?,?,?,?,?,?,?)').bind(c.id,user,id,c.ordinal,c.page,c.section,c.text,JSON.stringify(c.vector)));
  let relationCount=0;const used=new Set<string>();
- for(const p of extracted){const chunk=chunks.find(c=>c.id===p.id);if(!chunk)continue;const entityMap=new Map<string,string>();
-  for(const e of p.entities){const name=normalized(e.name);if(!name||!normalized(chunk.text).includes(name))continue;const eid=(await digest(`${user}:${e.kind}:${name}`)).slice(0,32);entityMap.set(name,eid);
+ for(const p of extracted){const chunk=chunks.find(c=>c.id===p.id);if(!chunk)continue;const entityMap=new Map<string,string>(),chunkText=normalized(chunk.text);
+  for(const e of p.entities){const name=normalized(e.name);if(!containsPhrase(chunkText,name))continue;const eid=(await digest(`${user}:${e.kind}:${name}`)).slice(0,32);entityMap.set(name,eid);
    if(!used.has(eid)){statements.push(db.prepare('INSERT OR IGNORE INTO entities (id,owner,label,kind) VALUES (?,?,?,?)').bind(eid,user,e.name,e.kind));used.add(eid);}
    statements.push(db.prepare('INSERT OR IGNORE INTO mentions (id,owner,entity_id,chunk_id) VALUES (?,?,?,?)').bind(`${eid}:${chunk.id}`,user,eid,chunk.id));
   }
-  for(const r of p.relations){const source=entityMap.get(normalized(r.source)),target=entityMap.get(normalized(r.target)),quote=normalized(r.quote);if(!source||!target||source===target||!normalized(chunk.text).includes(quote)||!quote.includes(normalized(r.source))||!quote.includes(normalized(r.target)))continue;const relation=r.relation.toUpperCase().replace(/[^A-Z0-9_]/g,'_');const eid=await digest(`${chunk.id}:${source}:${relation}:${target}`);statements.push(db.prepare('INSERT OR IGNORE INTO edges (id,owner,source,target,relation,quote,chunk_id) VALUES (?,?,?,?,?,?,?)').bind(eid,user,source,target,relation,r.quote,chunk.id));relationCount++;}
+  for(const r of p.relations){const source=entityMap.get(normalized(r.source)),target=entityMap.get(normalized(r.target)),quote=normalized(r.quote);if(!source||!target||source===target||!chunkText.includes(quote)||!containsPhrase(quote,normalized(r.source))||!containsPhrase(quote,normalized(r.target)))continue;const relation=r.relation.toUpperCase().replace(/[^A-Z0-9_]/g,'_');const eid=await digest(`${chunk.id}:${source}:${relation}:${target}`);statements.push(db.prepare('INSERT OR IGNORE INTO edges (id,owner,source,target,relation,quote,chunk_id) VALUES (?,?,?,?,?,?,?)').bind(eid,user,source,target,relation,r.quote,chunk.id));relationCount++;}
  }
  if(statements.length>950)throw new HttpError(413,'This document contains too many graph facts. Split it into smaller files.');
  await runtime().FILES.put(storageKey,bytes,{httpMetadata:{contentType:file.type||'application/octet-stream'}});
