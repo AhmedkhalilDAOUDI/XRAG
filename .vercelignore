@@ -1,0 +1,12 @@
+.env*
+!.env.example
+.dev.vars*
+.mcp.json
+.claude/
+.wrangler/
+.vinext/
+.next/
+dist/
+.venv/
+graphify-out/
+node_modules/

@@ -101,6 +101,19 @@ Delete removes original bytes, passages, dependent edges/mentions, orphan entiti
 
 `Dockerfile` packages a local Workers rehearsal. Authentication is intentionally not bypassed in that container. Use the Sites gateway for the deployed product. The Docker Compose file provides the separate Neo4j analysis service.
 
+## Vercel deployment (single owner)
+
+`npm run build:vercel` applies `drizzle/*.sql` to a libSQL database and runs `next build`. In that build, `cloudflare:workers` resolves to `lib/vercel-env.ts`, which serves the same `DB` and `FILES` calls from Turso (libSQL) and private Vercel Blob, so the application code is shared with the Cloudflare build.
+
+Project environment variables:
+
+- `TURSO_DATABASE_URL`, `TURSO_AUTH_TOKEN`: the Turso database. Migrations run against it during every build.
+- `BLOB_READ_WRITE_TOKEN`: set by connecting a private Vercel Blob store to the project.
+- `NVIDIA_API_KEY`, plus optional `NVIDIA_CHAT_MODEL` and `NVIDIA_EMBED_MODEL`.
+- `APP_PASSWORD`: switches on single-owner mode. Pages and API routes require HTTP Basic authentication with this password (the username is ignored), and `oai-authenticated-user-*` headers are no longer trusted. `OWNER_ID` optionally names the owner (default `owner`).
+
+Vercel limits request bodies to 4.5 MB, so uploads larger than that fail on Vercel even though the application accepts up to 8 MB. API functions are allowed 300 seconds. Without `APP_PASSWORD` every request is rejected, because no gateway supplies identity headers.
+
 ## Production acceptance boundary
 
 This release is a tested private academic pilot, not independently certified enterprise software. Before confidential organisation-wide use: validate the real corpus and permissions, agree provider processing terms, configure membership policy, test backup restoration and incident response, run concurrency/load tests and a security review, and perform independent human evaluation. Exact implemented limits and unverified items accompany the report. Do not interpret passing engineering tests as proof of answer correctness or general GraphRAG superiority.
